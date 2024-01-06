@@ -1,4 +1,4 @@
-# Project Repository Readme
+# Project Seed Creator from database
 
 This repository contains four essential files to facilitate database seeding using Prisma. Follow the instructions below to understand the purpose and usage of each file.
 
