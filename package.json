@@ -1,0 +1,10 @@
+{
+  "name": "seedgenerate",
+  "version": "1.0.0",
+  "description": "Files to make seeds from Database with prisma.",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "MIT"
+}
