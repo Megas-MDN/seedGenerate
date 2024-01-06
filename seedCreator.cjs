@@ -149,7 +149,6 @@ export const readAllTables = async ({
   return { tables, collections: merged, stackTryAgain };
 };
 
-// import './seedCreatorJSON';
 // /*
 readAllTables({
   allSeeds: true,
