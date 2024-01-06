@@ -345,7 +345,7 @@ export const readAllTables = async ({
 // /*
 readAllTables({
   allSeeds: true,
-  seedFile: true,
+  seedFile: false,
   logTables: false,
   onlyTables: [],
 });
