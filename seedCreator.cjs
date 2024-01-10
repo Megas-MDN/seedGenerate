@@ -3,8 +3,8 @@ const fs = require('fs/promises');
 
 const prisma = new PrismaClient();
 
-const snakeToCamel = (str) =>
-  str.toLocaleLowerCase().replace(/([-_][a-z0-9])/g, (undeScoreAndString) => {
+const snakeToCamel = str =>
+  str.toLocaleLowerCase().replace(/([-_][a-z0-9])/g, undeScoreAndString => {
     return undeScoreAndString.toUpperCase().replace('-', '').replace('_', '');
   });
 
@@ -12,10 +12,7 @@ const writeTable = async ({ table, value, folder }) => {
   const tableNameCamelCase = snakeToCamel(table);
   const dir = `./prisma/${folder}`;
   await fs.mkdir(dir, { recursive: true });
-  return fs.writeFile(
-    `${dir}/${tableNameCamelCase}.json`,
-    `${JSON.stringify(value, null, 2)}`
-  );
+  return fs.writeFile(`${dir}/${tableNameCamelCase}.json`, `${JSON.stringify(value, null, 2)}`);
 };
 
 const options = ({ key, value }) => {
@@ -34,7 +31,7 @@ const options = ({ key, value }) => {
   }
 };
 
-const removeNullElements = (obj) => {
+const removeNullElements = obj => {
   return Object.keys(obj).reduce((acc, key) => {
     const value = options({ key, value: obj[key] });
     if (value === null || value === undefined) {
@@ -71,7 +68,7 @@ const filterTables = ({ obj, filters, key }) => {
 
 const createAllSeeds = async ({ tables, folder }) => {
   await Promise.allSettled(
-    Object.keys(tables).map((key) => {
+    Object.keys(tables).map(key => {
       writeTable({ table: key, value: tables[key], folder });
     })
   );
@@ -82,9 +79,9 @@ const stackTryAgain = {};
 
 const findAndRefind = async ({ tables, internalFilters }) => {
   const selectsAll = await Promise.allSettled(
-    tables.map((table) => {
+    tables.map(table => {
       return prisma[table].findMany({
-        take: 1000,
+        take: 1000
       });
     })
   );
@@ -97,11 +94,11 @@ const findAndRefind = async ({ tables, internalFilters }) => {
     }
 
     delete stackTryAgain[tables[i]];
-    acc[tables[i]] = result.value.map((item) =>
+    acc[tables[i]] = result.value.map(item =>
       filterTables({
         obj: removeNullElements(item),
         filters: internalFilters,
-        key: tables[i],
+        key: tables[i]
       })
     );
     return acc;
@@ -109,19 +106,16 @@ const findAndRefind = async ({ tables, internalFilters }) => {
 
   return merged;
 };
-export const readAllTables = async ({
+const readAllTables = async ({
   allSeeds = false,
   logTables = true,
-  arrFilters = filters,
+  arrFilters = [],
   onlyTables = [], // only especific tables
-  folderName = 'seeds',
+  folderName = 'seeds'
 } = {}) => {
-  const tables =
-    onlyTables.length > 0 ? onlyTables : Object.keys(Prisma.ModelName);
+  const tables = onlyTables.length > 0 ? onlyTables : Object.keys(Prisma.ModelName);
 
-  const merged = !allSeeds
-    ? {}
-    : await findAndRefind({ tables, internalFilters: arrFilters });
+  const merged = !allSeeds ? {} : await findAndRefind({ tables, internalFilters: arrFilters });
 
   const MAX_TRY_AGAIN = 3;
   let breakWhile = 10; // safe condition
@@ -131,12 +125,12 @@ export const readAllTables = async ({
     console.log('\n **************** Go run while ************** \n');
     while (
       Object.keys(stackTryAgain).length > 0 &&
-      Object.values(stackTryAgain).some((v) => v < MAX_TRY_AGAIN) &&
+      Object.values(stackTryAgain).some(v => v < MAX_TRY_AGAIN) &&
       breakWhile-- > 0
     ) {
       const newMerge = await findAndRefind({
         tables: Object.keys(stackTryAgain),
-        internalFilters: arrFilters,
+        internalFilters: arrFilters
       });
       Object.assign(merged, newMerge);
     }
@@ -149,10 +143,13 @@ export const readAllTables = async ({
   return { tables, collections: merged, stackTryAgain };
 };
 
+// import './seedCreatorJSON';
 // /*
 readAllTables({
   allSeeds: true,
   logTables: false,
-  onlyTables: [],
+  onlyTables: []
 });
 //  */
+
+module.exports = readAllTables;
